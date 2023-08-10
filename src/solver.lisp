@@ -19,7 +19,6 @@
                  :arguments (list "--lang" "sygus"
                                   "--produce-models"
                                   "--incremental"
-                                  "--tlimit-per" "10000"
                                   )))
 
 (defun %check-specification (specification)
@@ -116,7 +115,7 @@
                                      children))))))
 
 (defmethod solve-problem ((solver (eql :sygus)) semgus-problem &key &allow-other-keys)
-  "We should solve the problem here eventually..."
+  "Dump the problem as SMT commands to the SMT solver"
   (let ((context (semgus:context semgus-problem)))
     (smt:with-solver* (s (smt-solver-configuration solver))
       (smt:set-logic s "ALL")
@@ -137,10 +136,11 @@
       (smt:dump s (format nil "(check-synth)~%"))
 
       ;; Get the model?
-      (let ((model (smt:read-model s)))
-        (if model
-            (resurrect-program (smt:definition (first model)) context)
-            nil)))))
+      (a:when-let* ((model (smt:read-model s))
+                    (definition (smt:definition (first model)))
+                    (result (resurrect-program definition context)))
+        (format t "~&SyGuS solver returned: ~a~%" result)
+        result))))
 
 (defun test-solve (path)
   (let ((problem (semgus:load-semgus-problem path)))
