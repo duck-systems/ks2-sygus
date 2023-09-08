@@ -13,13 +13,16 @@
   :spec-transformer nil ; We'll probably want something eventually
   :options nil)
 
-(defmethod smt-solver-configuration ((solver (eql :sygus)) &key &allow-other-keys)
+(defvar *cvc5-configuration*
   (make-instance 'smt:solver*
                  :program "cvc5"
                  :arguments (list "--lang" "sygus"
                                   "--produce-models"
                                   "--incremental"
                                   )))
+
+(defmethod smt-solver-configuration ((solver (eql :sygus)) &key &allow-other-keys)
+  *cvc5-configuration*)
 
 (defun %check-specification (specification)
   "Checks that SPECIFICATION is valid for a SyGuS problem"
